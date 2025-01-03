@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <BleGamepad.h> // https://github.com/lemmingDev/ESP32-BLE-Gamepad
+#include <BleGamepad.h>
 
 BleGamepad bleGamepad;
 
@@ -15,11 +15,11 @@ byte previousHatStates[numOfHats * 4];
 byte currentHatStates[numOfHats * 4];
 byte hatPins[numOfHats * 4] = {13, 18, 21, 23}; // in order UP, LEFT, DOWN, RIGHT. 4 pins per hat switch (Eg. List 12 pins if there are 3 hat switches)
 
-const int xpin = 34;                  // x axis is connected to GPIO 34 (Analog ADC1_CH6)
+const int xpin = 34;                  // x axis is connected to GPIO 34
 const int ypin = 35;                  // y axis is connected to GPIO 35
-const int numberOfPotSamples = 5;     // Number of pot samples to take (to smooth the values)
+const int numberOfPotSamples = 5;     // Number of potentiometer samples to take from each axis of the joystick
 const int delayBetweenSamples = 4;    // Delay in milliseconds between pot samples
-const int delayBetweenHIDReports = 5; // Additional delay in milliseconds between HID reports
+const int delayBetweenHIDReports = 5; 
 
 void setup()
 {
@@ -44,15 +44,13 @@ void setup()
     bleGamepadConfig.setButtonCount(numOfButtons);
     bleGamepadConfig.setHatSwitchCount(numOfHats);
     bleGamepad.begin(&bleGamepadConfig);
-
-    // changing bleGamepadConfig after the begin function has no effect, unless you call the begin function again
 }
 
 void loop()
 {
     if (bleGamepad.isConnected())
     {
-        // Deal with buttons
+        // Button updates
         for (byte currentIndex = 0; currentIndex < numOfButtons; currentIndex++)
         {
             currentButtonStates[currentIndex] = digitalRead(buttonPins[currentIndex]);
@@ -70,7 +68,7 @@ void loop()
             }
         }
 
-        // Update hat switch pin states
+        // Hat switch pin updates
         for (byte currentHatPinsIndex = 0; currentHatPinsIndex < numOfHats * 4; currentHatPinsIndex++)
         {
             currentHatStates[currentHatPinsIndex] = digitalRead(hatPins[currentHatPinsIndex]);
@@ -134,10 +132,10 @@ void loop()
             bleGamepad.sendReport();
         }
 
-        int potXValues[numberOfPotSamples]; // Array to store pot readings
-        int potXValue = 0;                  // Variable to store calculated pot reading average
-        int potYValues[numberOfPotSamples]; // Array to store pot readings
-        int potYValue = 0;                  // Variable to store calculated pot reading average
+        int potXValues[numberOfPotSamples]; // Array to store x axis readings
+        int potXValue = 0;                  // Variable to store x average
+        int potYValues[numberOfPotSamples]; // Array to store y axis readings
+        int potYValue = 0;                  // Variable to store y average
 
         // Populate readings
         for (int i = 0; i < numberOfPotSamples; i++)
@@ -157,7 +155,7 @@ void loop()
         int adjustedXValue = map(potXValue, 0, 4095, 32737, 0);
         int adjustedYValue = map(potYValue, 0, 4095, 32737, 0);
 
-        // Update axes and auto-send report
+        // Update axes and send report
         bleGamepad.setX(adjustedXValue);
         bleGamepad.setY(adjustedYValue);
         delay(delayBetweenHIDReports);
